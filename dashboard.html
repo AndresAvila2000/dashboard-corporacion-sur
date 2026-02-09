@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Corporación del Sur</title>
+    <script>
+        // Protección: Verificar login
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'index.html';
+        }
+        
+        // Función de logout
+        function logout() {
+            if (confirm('¿Está seguro que desea cerrar sesión?')) {
+                sessionStorage.clear();
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #8B1A1A 0%, #A62929 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container { max-width: 1800px; margin: 0 auto; }
+        
+        header {
+            background: white;
+            padding: 20px 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-name {
+            color: #666;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+        
+        .btn-logout {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-logout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+        }
+        
+        .logo { height: 70px; width: auto; }
+        .header-text { flex-grow: 1; }
+        h1 { color: #8B1A1A; font-size: 2em; margin-bottom: 5px; }
+        .subtitle { color: #666; font-size: 0.95em; }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .tab-button {
+            background: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .tab-button:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); }
+        .tab-button.active { background: linear-gradient(135deg, #8B1A1A 0%, #A62929 100%); color: white; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.5s; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            border-top: 4px solid #8B1A1A;
+        }
+        
+        .stat-value { font-size: 1.8em; font-weight: bold; color: #8B1A1A; margin-bottom: 5px; }
+        .stat-label { color: #666; font-size: 0.9em; }
+        
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .filters h3 { color: #8B1A1A; margin-bottom: 15px; }
+        
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .filter-group { display: flex; flex-direction: column; }
+        label { font-weight: 600; margin-bottom: 5px; color: #333; font-size: 0.9em; }
+        
+        input, select {
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus { outline: none; border-color: #8B1A1A; }
+        
+        .btn {
+            background: linear-gradient(135deg, #8B1A1A 0%, #A62929 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.3s;
+            margin-right: 10px;
+        }
+        
+        .btn:hover { transform: translateY(-2px); }
+        .btn-secondary { background: linear-gradient(135deg, #718096 0%, #4a5568 100%); }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .chart-container h3 { color: #8B1A1A; margin-bottom: 20px; text-align: center; font-size: 1.2em; }
+        .chart-wrapper { position: relative; height: 350px; }
+        
+        .comprobantes-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .comprobantes-table th {
+            background: #8B1A1A;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .comprobantes-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .comprobantes-table tr:hover {
+            background: #f7fafc;
+        }
+        
+        .loading { text-align: center; padding: 40px; color: white; font-size: 1.2em; }
+        .error { text-align: center; padding: 40px; color: #fed7d7; background: rgba(0,0,0,0.2); border-radius: 10px; }
+        
+        .select2-container--default .select2-selection--multiple {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            min-height: 42px;
+        }
+        
+        .select2-container--default.select2-container--focus .select2-selection--multiple {
+            border-color: #8B1A1A;
+        }
+        
+        @media (max-width: 768px) {
+            header { flex-direction: column; text-align: center; }
+            .logo { height: 60px; }
+            h1 { font-size: 1.5em; }
+            .charts-grid { grid-template-columns: 1fr; }
+            .tab-button { padding: 12px 25px; font-size: 1em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+            <img src="data:image/png;base64,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" class="logo" alt="Corporación del Sur">
+            <div class="header-text">
+                <h1>📊 Dashboard de Análisis</h1>
+                <p class="subtitle">Corporación del Sur - Ventas y Compras</p>
+            </div>
+            <div class="user-section">
+                <span class="user-name" id="current-user">Usuario</span>
+                <button class="btn-logout" onclick="logout()">🚪 Cerrar Sesión</button>
+            </div>
+            </div>
+        <script>
+            document.getElementById("current-user").textContent = sessionStorage.getItem("username") || "Usuario";
+        </script>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('ventas')">📈 VENTAS</button>
+            <button class="tab-button" onclick="switchTab('compras')">🛒 COMPRAS</button>
+            <button class="tab-button" onclick="switchTab('comparacion')">📊 COMPARACIÓN</button>
+        </div>
+        
+        <div id="loading" class="loading">Cargando datos...</div>
+        <div id="error" class="error" style="display:none;"></div>
+        
+        <!-- VENTAS TAB -->
+        <div id="ventas-tab" class="tab-content active">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="ventas-total">-</div>
+                    <div class="stat-label">Total Facturado (Neto)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="ventas-cantidad">-</div>
+                    <div class="stat-label">Cantidad Facturas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="ventas-clientes">-</div>
+                    <div class="stat-label">Clientes Únicos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="ventas-promedio">-</div>
+                    <div class="stat-label">Promedio por Factura</div>
+                </div>
+            </div>
+            
+            <div class="filters">
+                <h3>🔍 Filtros de Ventas</h3>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>Fecha Desde</label>
+                        <input type="date" id="ventas-fecha-desde">
+                    </div>
+                    <div class="filter-group">
+                        <label>Fecha Hasta</label>
+                        <input type="date" id="ventas-fecha-hasta">
+                    </div>
+                    <div class="filter-group">
+                        <label>Cliente</label>
+                        <select id="ventas-cliente">
+                            <option value="">Todos los clientes</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Empresa</label>
+                        <select id="ventas-empresa">
+                            <option value="">Todas las empresas</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Dimensión (múltiple)</label>
+                        <select id="ventas-dimension" multiple="multiple" style="width: 100%">
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn" onclick="aplicarFiltrosVentas()">Aplicar Filtros</button>
+                    <button class="btn btn-secondary" onclick="limpiarFiltrosVentas()">Limpiar</button>
+                </div>
+            </div>
+            
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3>📈 Evolución Mensual</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="ventas-evolucion"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>👥 Top 10 Clientes</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="ventas-clientes-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3>📋 ANÁLISIS DE COMPROBANTES - DETALLE</h3>
+                <div style="max-height: 500px; overflow-y: auto;">
+                    <table class="comprobantes-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Número</th>
+                                <th>Tipo</th>
+                                <th>Cliente</th>
+                                <th>Producto</th>
+                                <th>Descripción</th>
+                                <th>Importe Neto</th>
+                                <th>Impuestos</th>
+                                <th>Total</th>
+                                <th>Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ventas-comprobantes-body">
+                            <tr><td colspan="10" style="text-align:center; padding: 20px;">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="text-align: center; margin-top: 15px; color: #666; font-size: 0.9em;">
+                    Mostrando últimos 100 registros
+                </div>
+            </div>
+        </div>
+        
+        <!-- COMPRAS TAB -->
+        <div id="compras-tab" class="tab-content">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="compras-total">-</div>
+                    <div class="stat-label">Total Compras (Neto)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="compras-cantidad">-</div>
+                    <div class="stat-label">Cantidad Facturas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="compras-proveedores">-</div>
+                    <div class="stat-label">Proveedores Únicos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="compras-promedio">-</div>
+                    <div class="stat-label">Promedio por Compra</div>
+                </div>
+            </div>
+            
+            <div class="filters">
+                <h3>🔍 Filtros de Compras</h3>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>Fecha Desde</label>
+                        <input type="date" id="compras-fecha-desde">
+                    </div>
+                    <div class="filter-group">
+                        <label>Fecha Hasta</label>
+                        <input type="date" id="compras-fecha-hasta">
+                    </div>
+                    <div class="filter-group">
+                        <label>Proveedor</label>
+                        <select id="compras-proveedor">
+                            <option value="">Todos los proveedores</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Empresa</label>
+                        <select id="compras-empresa">
+                            <option value="">Todas las empresas</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Dimensión (múltiple)</label>
+                        <select id="compras-dimension" multiple="multiple" style="width: 100%">
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn" onclick="aplicarFiltrosCompras()">Aplicar Filtros</button>
+                    <button class="btn btn-secondary" onclick="limpiarFiltrosCompras()">Limpiar</button>
+                </div>
+            </div>
+            
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3>📈 Evolución Mensual</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="compras-evolucion"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>🏢 Top 10 Proveedores</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="compras-proveedores-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3>📋 ANÁLISIS DE COMPROBANTES - DETALLE</h3>
+                <div style="max-height: 500px; overflow-y: auto;">
+                    <table class="comprobantes-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Número</th>
+                                <th>Tipo</th>
+                                <th>Proveedor</th>
+                                <th>Producto</th>
+                                <th>Descripción</th>
+                                <th>Importe Neto</th>
+                                <th>Impuestos</th>
+                                <th>Total</th>
+                                <th>Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="compras-comprobantes-body">
+                            <tr><td colspan="10" style="text-align:center; padding: 20px;">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="text-align: center; margin-top: 15px; color: #666; font-size: 0.9em;">
+                    Mostrando últimos 100 registros
+                </div>
+            </div>
+        </div>
+        
+        <!-- COMPARACIÓN TAB -->
+        <div id="comparacion-tab" class="tab-content">
+            <div class="filters">
+                <h3>🔍 Filtros de Comparación</h3>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>Fecha Desde</label>
+                        <input type="date" id="comparacion-fecha-desde">
+                    </div>
+                    <div class="filter-group">
+                        <label>Fecha Hasta</label>
+                        <input type="date" id="comparacion-fecha-hasta">
+                    </div>
+                    <div class="filter-group">
+                        <label>Empresa</label>
+                        <select id="comparacion-empresa">
+                            <option value="">Todas las empresas</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Dimensión</label>
+                        <select id="comparacion-dimension">
+                            <option value="">Todas las dimensiones</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn" onclick="aplicarFiltrosComparacion()">Aplicar Filtros</button>
+                    <button class="btn btn-secondary" onclick="limpiarFiltrosComparacion()">Limpiar</button>
+                </div>
+            </div>
+            
+            <div class="chart-container" style="max-width: 100%;">
+                <h3>📊 Evolución Ventas vs Compras (Importe Neto)</h3>
+                <div class="chart-wrapper" style="height: 450px;">
+                    <canvas id="comparacion-evolucion"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = 'https://api-dashboard-corporacion-production.up.railway.app';
+        let charts = {};
+        
+        // Switch tabs
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + '-tab').classList.add('active');
+            
+            if (tab === 'ventas') {
+                cargarDatosVentas();
+            } else if (tab === 'compras') {
+                cargarDatosCompras();
+            } else if (tab === 'comparacion') {
+                cargarDatosComparacion();
+            }
+        }
+        
+        // Format currency
+        function formatCurrency(value) {
+            return '$' + parseFloat(value).toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+        
+        function formatNumber(value) {
+            return parseInt(value).toLocaleString('es-AR');
+        }
+        
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            return new Date(dateStr).toLocaleDateString('es-AR');
+        }
+        
+        // COMPARACIÓN
+        async function cargarDatosComparacion() {
+            try {
+                const filtros = obtenerFiltrosComparacion();
+                
+                const [evolucionVentas, evolucionCompras] = await Promise.all([
+                    fetch(API_URL + '/api/ventas/evolucion' + filtros).then(r => r.json()),
+                    fetch(API_URL + '/api/compras/evolucion' + filtros).then(r => r.json())
+                ]);
+                
+                actualizarGraficoComparacion(evolucionVentas, evolucionCompras);
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                mostrarError('Error al cargar comparación: ' + error.message);
+            }
+        }
+        
+        function obtenerFiltrosComparacion() {
+            const params = new URLSearchParams();
+            const desde = document.getElementById('comparacion-fecha-desde').value;
+            const hasta = document.getElementById('comparacion-fecha-hasta').value;
+            const empresa = document.getElementById('comparacion-empresa').value;
+            const dimension = document.getElementById('comparacion-dimension').value;
+            
+            if (desde) params.append('fecha_desde', desde);
+            if (hasta) params.append('fecha_hasta', hasta);
+            if (empresa) params.append('empresa', empresa);
+            if (dimension) params.append('dimension', dimension);
+            
+            return params.toString() ? '?' + params.toString() : '';
+        }
+        
+        function aplicarFiltrosComparacion() {
+            cargarDatosComparacion();
+        }
+        
+        function limpiarFiltrosComparacion() {
+            document.getElementById('comparacion-fecha-desde').value = '';
+            document.getElementById('comparacion-fecha-hasta').value = '';
+            document.getElementById('comparacion-empresa').value = '';
+            document.getElementById('comparacion-dimension').value = '';
+            cargarDatosComparacion();
+        }
+        
+        function actualizarGraficoComparacion(ventasData, comprasData) {
+            if (charts.comparacion) charts.comparacion.destroy();
+            
+            const mesesSet = new Set([...ventasData.map(d => d.mes), ...comprasData.map(d => d.mes)]);
+            const meses = Array.from(mesesSet).sort();
+            
+            const ventasMap = {};
+            ventasData.forEach(d => ventasMap[d.mes] = parseFloat(d.total || 0));
+            
+            const comprasMap = {};
+            comprasData.forEach(d => comprasMap[d.mes] = parseFloat(d.total || 0));
+            
+            const ventasArray = meses.map(mes => ventasMap[mes] || 0);
+            const comprasArray = meses.map(mes => comprasMap[mes] || 0);
+            
+            const ctx = document.getElementById('comparacion-evolucion').getContext('2d');
+            charts.comparacion = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: meses,
+                    datasets: [
+                        {
+                            label: 'Ventas',
+                            data: ventasArray,
+                            borderColor: '#8B1A1A',
+                            backgroundColor: 'rgba(139, 26, 26, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        },
+                        {
+                            label: 'Compras',
+                            data: comprasArray,
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: { size: 16, weight: 'bold' },
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': $' + context.parsed.y.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: value => '$' + value.toLocaleString('es-AR'),
+                                font: { size: 12 }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: { size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // VENTAS
+        async function cargarDatosVentas() {
+            try {
+                const filtros = obtenerFiltrosVentas();
+                
+                const [stats, evolucion, topClientes, comprobantes] = await Promise.all([
+                    fetch(API_URL + '/api/ventas/stats' + filtros).then(r => r.json()),
+                    fetch(API_URL + '/api/ventas/evolucion' + filtros).then(r => r.json()),
+                    fetch(API_URL + '/api/ventas/top-clientes' + filtros).then(r => r.json()),
+                    fetch(API_URL + '/api/ventas/analisis-comprobantes' + filtros).then(r => r.json())
+                ]);
+                
+                actualizarStatsVentas(stats);
+                actualizarGraficoEvolucionVentas(evolucion);
+                actualizarGraficoClientesVentas(topClientes);
+                actualizarTablaComprobantesVentas(comprobantes);
+                
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                mostrarError('Error al cargar datos de ventas: ' + error.message);
+            }
+        }
+        
+        function obtenerFiltrosVentas() {
+            const params = new URLSearchParams();
+            const desde = document.getElementById('ventas-fecha-desde').value;
+            const hasta = document.getElementById('ventas-fecha-hasta').value;
+            const cliente = document.getElementById('ventas-cliente').value;
+            const empresa = document.getElementById('ventas-empresa').value;
+            const dimensiones = $('#ventas-dimension').val();
+            
+            if (desde) params.append('fecha_desde', desde);
+            if (hasta) params.append('fecha_hasta', hasta);
+            if (cliente) params.append('cliente', cliente);
+            if (empresa) params.append('empresa', empresa);
+            if (dimensiones && dimensiones.length > 0) {
+                dimensiones.forEach(d => params.append('dimension', d));
+            }
+            
+            return params.toString() ? '?' + params.toString() : '';
+        }
+        
+        function actualizarStatsVentas(stats) {
+            document.getElementById('ventas-total').textContent = formatCurrency(stats.total_facturado || 0);
+            document.getElementById('ventas-cantidad').textContent = formatNumber(stats.cantidad_facturas || 0);
+            document.getElementById('ventas-clientes').textContent = formatNumber(stats.clientes_unicos || 0);
+            document.getElementById('ventas-promedio').textContent = formatCurrency(stats.promedio_factura || 0);
+        }
+        
+        function actualizarGraficoEvolucionVentas(data) {
+            if (charts.ventasEvolucion) charts.ventasEvolucion.destroy();
+            
+            const ctx = document.getElementById('ventas-evolucion').getContext('2d');
+            charts.ventasEvolucion = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.mes),
+                    datasets: [{
+                        label: 'Facturación Mensual',
+                        data: data.map(d => parseFloat(d.total)),
+                        borderColor: '#8B1A1A',
+                        backgroundColor: 'rgba(139, 26, 26, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: value => '$' + value.toLocaleString('es-AR') }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function actualizarGraficoClientesVentas(data) {
+            if (charts.ventasClientes) charts.ventasClientes.destroy();
+            
+            const ctx = document.getElementById('ventas-clientes-chart').getContext('2d');
+            charts.ventasClientes = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.nombre.substring(0, 30)),
+                    datasets: [{
+                        label: 'Total',
+                        data: data.map(d => parseFloat(d.total)),
+                        backgroundColor: '#8B1A1A'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { callback: value => '$' + value.toLocaleString('es-AR') } }
+                    }
+                }
+            });
+        }
+        
+        function actualizarTablaComprobantesVentas(data) {
+            const tbody = document.getElementById('ventas-comprobantes-body');
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 20px;">No hay datos disponibles</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = data.map(row => `
+                <tr>
+                    <td>${formatDate(row.fecha)}</td>
+                    <td>${row.numero_comprobante || '-'}</td>
+                    <td>${row.tipo_comprobante || '-'}</td>
+                    <td>${row.cliente || '-'}</td>
+                    <td>${row.producto || '-'}</td>
+                    <td>${(row.descripcion || '-').substring(0, 50)}</td>
+                    <td style="text-align: right;">${formatCurrency(row.importe_neto)}</td>
+                    <td style="text-align: right;">${formatCurrency(row.impuestos)}</td>
+                    <td style="text-align: right;">${formatCurrency(row.total)}</td>
+                    <td>${(row.observaciones || '-').substring(0, 30)}</td>
+                </tr>
+            `).join('');
+        }
+        
+        function aplicarFiltrosVentas() {
+            cargarDatosVentas();
+        }
+        
+        function limpiarFiltrosVentas() {
+            document.getElementById('ventas-fecha-desde').value = '';
+            document.getElementById('ventas-fecha-hasta').value = '';
+            document.getElementById('ventas-cliente').value = '';
+            document.getElementById('ventas-empresa').value = '';
+            $('#ventas-dimension').val(null).trigger('change');
+            cargarDatosVentas();
+        }
+        
+        // COMPRAS
+        async function cargarDatosCompras() {
+            try {
+                const filtros = obtenerFiltrosCompras();
+                
+                const [stats, evolucion, topProveedores, comprobantes] = await Promise.all([
+                    fetch(API_URL + '/api/compras/stats' + filtros).then(r => r.json()),
+                    fetch(API_URL + '/api/compras/evolucion' + filtros).then(r => r.json()),
+                    fetch(API_URL + '/api/compras/top-proveedores' + filtros).then(r => r.json()),
+                    fetch(API_URL + '/api/compras/analisis-comprobantes' + filtros).then(r => r.json())
+                ]);
+                
+                actualizarStatsCompras(stats);
+                actualizarGraficoEvolucionCompras(evolucion);
+                actualizarGraficoProveedoresCompras(topProveedores);
+                actualizarTablaComprobantesCompras(comprobantes);
+                
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                mostrarError('Error al cargar datos de compras: ' + error.message);
+            }
+        }
+        
+        function obtenerFiltrosCompras() {
+            const params = new URLSearchParams();
+            const desde = document.getElementById('compras-fecha-desde').value;
+            const hasta = document.getElementById('compras-fecha-hasta').value;
+            const proveedor = document.getElementById('compras-proveedor').value;
+            const empresa = document.getElementById('compras-empresa').value;
+            const dimensiones = $('#compras-dimension').val();
+            
+            if (desde) params.append('fecha_desde', desde);
+            if (hasta) params.append('fecha_hasta', hasta);
+            if (proveedor) params.append('proveedor', proveedor);
+            if (empresa) params.append('empresa', empresa);
+            if (dimensiones && dimensiones.length > 0) {
+                dimensiones.forEach(d => params.append('dimension', d));
+            }
+            
+            return params.toString() ? '?' + params.toString() : '';
+        }
+        
+        function actualizarStatsCompras(stats) {
+            document.getElementById('compras-total').textContent = formatCurrency(stats.total_compras || 0);
+            document.getElementById('compras-cantidad').textContent = formatNumber(stats.cantidad_facturas || 0);
+            document.getElementById('compras-proveedores').textContent = formatNumber(stats.proveedores_unicos || 0);
+            document.getElementById('compras-promedio').textContent = formatCurrency(stats.promedio_compra || 0);
+        }
+        
+        function actualizarGraficoEvolucionCompras(data) {
+            if (charts.comprasEvolucion) charts.comprasEvolucion.destroy();
+            
+            const ctx = document.getElementById('compras-evolucion').getContext('2d');
+            charts.comprasEvolucion = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.mes),
+                    datasets: [{
+                        label: 'Compras Mensuales',
+                        data: data.map(d => parseFloat(d.total)),
+                        borderColor: '#8B1A1A',
+                        backgroundColor: 'rgba(139, 26, 26, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: value => '$' + value.toLocaleString('es-AR') }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function actualizarGraficoProveedoresCompras(data) {
+            if (charts.comprasProveedores) charts.comprasProveedores.destroy();
+            
+            const ctx = document.getElementById('compras-proveedores-chart').getContext('2d');
+            charts.comprasProveedores = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.nombre.substring(0, 30)),
+                    datasets: [{
+                        label: 'Total',
+                        data: data.map(d => parseFloat(d.total)),
+                        backgroundColor: '#8B1A1A'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { callback: value => '$' + value.toLocaleString('es-AR') } }
+                    }
+                }
+            });
+        }
+        
+        function actualizarTablaComprobantesCompras(data) {
+            const tbody = document.getElementById('compras-comprobantes-body');
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 20px;">No hay datos disponibles</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = data.map(row => `
+                <tr>
+                    <td>${formatDate(row.fecha)}</td>
+                    <td>${row.numero_comprobante || '-'}</td>
+                    <td>${row.tipo_comprobante || '-'}</td>
+                    <td>${row.proveedor || '-'}</td>
+                    <td>${row.producto || '-'}</td>
+                    <td>${(row.descripcion || '-').substring(0, 50)}</td>
+                    <td style="text-align: right;">${formatCurrency(row.importe_neto)}</td>
+                    <td style="text-align: right;">${formatCurrency(row.impuestos)}</td>
+                    <td style="text-align: right;">${formatCurrency(row.total)}</td>
+                    <td>${(row.observaciones || '-').substring(0, 30)}</td>
+                </tr>
+            `).join('');
+        }
+        
+        function aplicarFiltrosCompras() {
+            cargarDatosCompras();
+        }
+        
+        function limpiarFiltrosCompras() {
+            document.getElementById('compras-fecha-desde').value = '';
+            document.getElementById('compras-fecha-hasta').value = '';
+            document.getElementById('compras-proveedor').value = '';
+            document.getElementById('compras-empresa').value = '';
+            $('#compras-dimension').val(null).trigger('change');
+            cargarDatosCompras();
+        }
+        
+        // Cargar filtros
+        async function cargarFiltros() {
+            try {
+                const [clientes, proveedores, empresas, dimVentas, dimCompras] = await Promise.all([
+                    fetch(API_URL + '/api/filtros/clientes').then(r => r.json()),
+                    fetch(API_URL + '/api/filtros/proveedores').then(r => r.json()),
+                    fetch(API_URL + '/api/filtros/empresas').then(r => r.json()),
+                    fetch(API_URL + '/api/filtros/dimensiones-ventas').then(r => r.json()),
+                    fetch(API_URL + '/api/filtros/dimensiones-compras').then(r => r.json())
+                ]);
+                
+                // Clientes
+                const clienteSelect = document.getElementById('ventas-cliente');
+                clientes.forEach(c => {
+                    const option = document.createElement('option');
+                    option.value = c.nombre;
+                    option.textContent = c.nombre;
+                    clienteSelect.appendChild(option);
+                });
+                
+                // Proveedores
+                const proveedorSelect = document.getElementById('compras-proveedor');
+                proveedores.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p.nombre;
+                    option.textContent = p.nombre;
+                    proveedorSelect.appendChild(option);
+                });
+                
+                // Empresas (para todos los selectores)
+                ['ventas-empresa', 'compras-empresa', 'comparacion-empresa'].forEach(selectId => {
+                    const select = document.getElementById(selectId);
+                    empresas.forEach(e => {
+                        const option = document.createElement('option');
+                        option.value = e.nombre;
+                        option.textContent = e.nombre;
+                        select.appendChild(option);
+                    });
+                });
+                
+                // Dimensiones Ventas (select2 múltiple)
+                dimVentas.forEach(d => {
+                    $('#ventas-dimension').append(new Option(d.nombre, d.nombre));
+                });
+                $('#ventas-dimension').select2({
+                    placeholder: 'Seleccionar dimensiones',
+                    allowClear: true
+                });
+                
+                // Dimensiones Compras (select2 múltiple)
+                dimCompras.forEach(d => {
+                    $('#compras-dimension').append(new Option(d.nombre, d.nombre));
+                });
+                $('#compras-dimension').select2({
+                    placeholder: 'Seleccionar dimensiones',
+                    allowClear: true
+                });
+                
+                // Dimensiones Comparación (simple)
+                const dimComparacionSelect = document.getElementById('comparacion-dimension');
+                // Combinar dimensiones únicas
+                const allDims = [...new Set([...dimVentas.map(d => d.nombre), ...dimCompras.map(d => d.nombre)])];
+                allDims.sort().forEach(d => {
+                    const option = document.createElement('option');
+                    option.value = d;
+                    option.textContent = d;
+                    dimComparacionSelect.appendChild(option);
+                });
+                
+            } catch (error) {
+                console.error('Error cargando filtros:', error);
+            }
+        }
+        
+        function mostrarError(mensaje) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').textContent = mensaje;
+            document.getElementById('error').style.display = 'block';
+        }
+        
+        // Inicializar
+        window.addEventListener('load', () => {
+            cargarFiltros();
+            cargarDatosVentas();
+        });
+    </script>
+</body>
+</html>
