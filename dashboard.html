@@ -263,7 +263,7 @@
         <div class="tabs">
             <button class="tab-button active" onclick="switchTab('ventas')">📈 VENTAS</button>
             <button class="tab-button" onclick="switchTab('compras')">🛒 COMPRAS</button>
-            <button class="tab-button" onclick="switchTab('comparacion')">📊 COMPARACIÓN</button>
+            <button class="tab-button" onclick="switchTab('resultado')">💰 RESULTADO</button>
         </div>
         
         <div id="loading" class="loading">Cargando datos...</div>
@@ -334,7 +334,7 @@
                 </div>
                 
                 <div class="chart-container">
-                    <h3>👥 Top 10 Clientes</h3>
+                    <h3>📈 Evolución Acumulada</h3>
                     <div class="chart-wrapper">
                         <canvas id="ventas-clientes-chart"></canvas>
                     </div>
@@ -435,7 +435,7 @@
                 </div>
                 
                 <div class="chart-container">
-                    <h3>🏢 Top 10 Proveedores</h3>
+                    <h3>📈 Evolución Acumulada</h3>
                     <div class="chart-wrapper">
                         <canvas id="compras-proveedores-chart"></canvas>
                     </div>
@@ -471,42 +471,49 @@
             </div>
         </div>
         
-        <!-- COMPARACIÓN TAB -->
-        <div id="comparacion-tab" class="tab-content">
+        <!-- RESULTADO TAB -->
+        <div id="resultado-tab" class="tab-content">
             <div class="filters">
-                <h3>🔍 Filtros de Comparación</h3>
+                <h3>🔍 Filtros de Resultado</h3>
                 <div class="filter-row">
                     <div class="filter-group">
                         <label>Fecha Desde</label>
-                        <input type="date" id="comparacion-fecha-desde">
+                        <input type="date" id="resultado-fecha-desde">
                     </div>
                     <div class="filter-group">
                         <label>Fecha Hasta</label>
-                        <input type="date" id="comparacion-fecha-hasta">
+                        <input type="date" id="resultado-fecha-hasta">
                     </div>
                     <div class="filter-group">
                         <label>Empresa</label>
-                        <select id="comparacion-empresa">
+                        <select id="resultado-empresa">
                             <option value="">Todas las empresas</option>
                         </select>
                     </div>
                     <div class="filter-group">
                         <label>Dimensión</label>
-                        <select id="comparacion-dimension">
+                        <select id="resultado-dimension">
                             <option value="">Todas las dimensiones</option>
                         </select>
                     </div>
                 </div>
                 <div>
-                    <button class="btn" onclick="aplicarFiltrosComparacion()">Aplicar Filtros</button>
-                    <button class="btn btn-secondary" onclick="limpiarFiltrosComparacion()">Limpiar</button>
+                    <button class="btn" onclick="aplicarFiltrosResultado()">Aplicar Filtros</button>
+                    <button class="btn btn-secondary" onclick="limpiarFiltrosResultado()">Limpiar</button>
                 </div>
             </div>
             
             <div class="chart-container" style="max-width: 100%;">
-                <h3>📊 Evolución Ventas vs Compras (Importe Neto)</h3>
+                <h3>💰 Neto Acumulado Total</h3>
+                <div class="chart-wrapper" style="height: 350px;">
+                    <canvas id="resultado-total"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container" style="max-width: 100%;">
+                <h3>📊 Neto Acumulado Mensual</h3>
                 <div class="chart-wrapper" style="height: 450px;">
-                    <canvas id="comparacion-evolucion"></canvas>
+                    <canvas id="resultado-mensual"></canvas>
                 </div>
             </div>
         </div>
@@ -528,8 +535,8 @@
                 cargarDatosVentas();
             } else if (tab === 'compras') {
                 cargarDatosCompras();
-            } else if (tab === 'comparacion') {
-                cargarDatosComparacion();
+            } else if (tab === 'resultado') {
+                cargarDatosResultado();
             }
         }
         
@@ -547,29 +554,30 @@
             return new Date(dateStr).toLocaleDateString('es-AR');
         }
         
-        // COMPARACIÓN
-        async function cargarDatosComparacion() {
+        // RESULTADO
+        async function cargarDatosResultado() {
             try {
-                const filtros = obtenerFiltrosComparacion();
+                const filtros = obtenerFiltrosResultado();
                 
                 const [evolucionVentas, evolucionCompras] = await Promise.all([
                     fetch(API_URL + '/api/ventas/evolucion' + filtros).then(r => r.json()),
                     fetch(API_URL + '/api/compras/evolucion' + filtros).then(r => r.json())
                 ]);
                 
-                actualizarGraficoComparacion(evolucionVentas, evolucionCompras);
+                actualizarGraficoNetoTotal(evolucionVentas, evolucionCompras);
+                actualizarGraficoNetoMensual(evolucionVentas, evolucionCompras);
                 document.getElementById('loading').style.display = 'none';
             } catch (error) {
-                mostrarError('Error al cargar comparación: ' + error.message);
+                mostrarError('Error al cargar resultado: ' + error.message);
             }
         }
         
-        function obtenerFiltrosComparacion() {
+        function obtenerFiltrosResultado() {
             const params = new URLSearchParams();
-            const desde = document.getElementById('comparacion-fecha-desde').value;
-            const hasta = document.getElementById('comparacion-fecha-hasta').value;
-            const empresa = document.getElementById('comparacion-empresa').value;
-            const dimension = document.getElementById('comparacion-dimension').value;
+            const desde = document.getElementById('resultado-fecha-desde').value;
+            const hasta = document.getElementById('resultado-fecha-hasta').value;
+            const empresa = document.getElementById('resultado-empresa').value;
+            const dimension = document.getElementById('resultado-dimension').value;
             
             if (desde) params.append('fecha_desde', desde);
             if (hasta) params.append('fecha_hasta', hasta);
@@ -579,21 +587,67 @@
             return params.toString() ? '?' + params.toString() : '';
         }
         
-        function aplicarFiltrosComparacion() {
-            cargarDatosComparacion();
+        function aplicarFiltrosResultado() {
+            cargarDatosResultado();
         }
         
-        function limpiarFiltrosComparacion() {
-            document.getElementById('comparacion-fecha-desde').value = '';
-            document.getElementById('comparacion-fecha-hasta').value = '';
-            document.getElementById('comparacion-empresa').value = '';
-            document.getElementById('comparacion-dimension').value = '';
-            cargarDatosComparacion();
+        function limpiarFiltrosResultado() {
+            document.getElementById('resultado-fecha-desde').value = '';
+            document.getElementById('resultado-fecha-hasta').value = '';
+            document.getElementById('resultado-empresa').value = '';
+            document.getElementById('resultado-dimension').value = '';
+            cargarDatosResultado();
         }
         
-        function actualizarGraficoComparacion(ventasData, comprasData) {
-            if (charts.comparacion) charts.comparacion.destroy();
+        function actualizarGraficoNetoTotal(ventasData, comprasData) {
+            if (charts.resultadoTotal) charts.resultadoTotal.destroy();
             
+            // Calcular totales acumulados
+            const totalVentas = ventasData.reduce((sum, d) => sum + parseFloat(d.total || 0), 0);
+            const totalCompras = comprasData.reduce((sum, d) => sum + parseFloat(d.total || 0), 0);
+            const resultado = totalVentas - totalCompras;
+            
+            const ctx = document.getElementById('resultado-total').getContext('2d');
+            charts.resultadoTotal = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Compras', 'Ventas', 'Resultado'],
+                    datasets: [{
+                        data: [totalCompras, totalVentas, resultado],
+                        backgroundColor: [
+                            '#dc2626', // Rojo para compras
+                            '#16a34a', // Verde para ventas
+                            resultado >= 0 ? '#2563eb' : '#dc2626' // Azul si positivo, rojo si negativo
+                        ],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => '$' + context.parsed.x.toLocaleString('es-AR', {minimumFractionDigits: 2})
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: { callback: value => '$' + value.toLocaleString('es-AR') }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function actualizarGraficoNetoMensual(ventasData, comprasData) {
+            if (charts.resultadoMensual) charts.resultadoMensual.destroy();
+            
+            // Combinar meses
             const mesesSet = new Set([...ventasData.map(d => d.mes), ...comprasData.map(d => d.mes)]);
             const meses = Array.from(mesesSet).sort();
             
@@ -603,75 +657,58 @@
             const comprasMap = {};
             comprasData.forEach(d => comprasMap[d.mes] = parseFloat(d.total || 0));
             
-            const ventasArray = meses.map(mes => ventasMap[mes] || 0);
             const comprasArray = meses.map(mes => comprasMap[mes] || 0);
+            const ventasArray = meses.map(mes => ventasMap[mes] || 0);
+            const resultadoArray = meses.map(mes => (ventasMap[mes] || 0) - (comprasMap[mes] || 0));
             
-            const ctx = document.getElementById('comparacion-evolucion').getContext('2d');
-            charts.comparacion = new Chart(ctx, {
-                type: 'line',
+            const ctx = document.getElementById('resultado-mensual').getContext('2d');
+            charts.resultadoMensual = new Chart(ctx, {
+                type: 'bar',
                 data: {
                     labels: meses,
                     datasets: [
                         {
-                            label: 'Ventas',
-                            data: ventasArray,
-                            borderColor: '#8B1A1A',
-                            backgroundColor: 'rgba(139, 26, 26, 0.1)',
-                            tension: 0.4,
-                            fill: true,
-                            borderWidth: 3,
-                            pointRadius: 5,
-                            pointHoverRadius: 7
-                        },
-                        {
                             label: 'Compras',
                             data: comprasArray,
-                            borderColor: '#2563eb',
-                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                            tension: 0.4,
-                            fill: true,
-                            borderWidth: 3,
-                            pointRadius: 5,
-                            pointHoverRadius: 7
+                            backgroundColor: '#dc2626',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Ventas',
+                            data: ventasArray,
+                            backgroundColor: '#16a34a',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Resultado',
+                            data: resultadoArray,
+                            backgroundColor: resultadoArray.map(v => v >= 0 ? '#2563eb' : '#dc2626'),
+                            borderRadius: 6
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false,
-                    },
-                    plugins: {
-                        legend: {
+                    plugins: { 
+                        legend: { 
                             display: true,
                             position: 'top',
                             labels: {
-                                font: { size: 16, weight: 'bold' },
-                                padding: 20
+                                font: { size: 14, weight: 'bold' },
+                                padding: 15
                             }
                         },
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ': $' + context.parsed.y.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                                }
+                                label: (context) => context.dataset.label + ': $' + context.parsed.y.toLocaleString('es-AR', {minimumFractionDigits: 2})
                             }
                         }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: {
-                                callback: value => '$' + value.toLocaleString('es-AR'),
-                                font: { size: 12 }
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                font: { size: 12 }
-                            }
+                            ticks: { callback: value => '$' + value.toLocaleString('es-AR') }
                         }
                     }
                 }
@@ -683,16 +720,15 @@
             try {
                 const filtros = obtenerFiltrosVentas();
                 
-                const [stats, evolucion, topClientes, comprobantes] = await Promise.all([
+                const [stats, evolucion, comprobantes] = await Promise.all([
                     fetch(API_URL + '/api/ventas/stats' + filtros).then(r => r.json()),
                     fetch(API_URL + '/api/ventas/evolucion' + filtros).then(r => r.json()),
-                    fetch(API_URL + '/api/ventas/top-clientes' + filtros).then(r => r.json()),
                     fetch(API_URL + '/api/ventas/analisis-comprobantes' + filtros).then(r => r.json())
                 ]);
                 
                 actualizarStatsVentas(stats);
                 actualizarGraficoEvolucionVentas(evolucion);
-                actualizarGraficoClientesVentas(topClientes);
+                actualizarGraficoEvolucionAcumuladaVentas(evolucion);
                 actualizarTablaComprobantesVentas(comprobantes);
                 
                 document.getElementById('loading').style.display = 'none';
@@ -732,22 +768,28 @@
             
             const ctx = document.getElementById('ventas-evolucion').getContext('2d');
             charts.ventasEvolucion = new Chart(ctx, {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: data.map(d => d.mes),
                     datasets: [{
                         label: 'Facturación Mensual',
                         data: data.map(d => parseFloat(d.total)),
-                        borderColor: '#8B1A1A',
-                        backgroundColor: 'rgba(139, 26, 26, 0.1)',
-                        tension: 0.4,
-                        fill: true
+                        backgroundColor: '#8B1A1A',
+                        borderRadius: 8
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: { 
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: (value) => '$' + value.toLocaleString('es-AR'),
+                            font: { weight: 'bold', size: 11 }
+                        }
+                    },
                     scales: {
                         y: {
                             beginAtZero: true,
@@ -758,27 +800,49 @@
             });
         }
         
-        function actualizarGraficoClientesVentas(data) {
+        function actualizarGraficoEvolucionAcumuladaVentas(data) {
             if (charts.ventasClientes) charts.ventasClientes.destroy();
+            
+            // Calcular acumulado
+            let acumulado = 0;
+            const dataAcumulada = data.map(d => {
+                acumulado += parseFloat(d.total);
+                return acumulado;
+            });
             
             const ctx = document.getElementById('ventas-clientes-chart').getContext('2d');
             charts.ventasClientes = new Chart(ctx, {
-                type: 'bar',
+                type: 'line',
                 data: {
-                    labels: data.map(d => d.nombre.substring(0, 30)),
+                    labels: data.map(d => d.mes),
                     datasets: [{
-                        label: 'Total',
-                        data: data.map(d => parseFloat(d.total)),
-                        backgroundColor: '#8B1A1A'
+                        label: 'Acumulado',
+                        data: dataAcumulada,
+                        borderColor: '#8B1A1A',
+                        backgroundColor: 'rgba(139, 26, 26, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    indexAxis: 'y',
-                    plugins: { legend: { display: false } },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => 'Acumulado: $' + context.parsed.y.toLocaleString('es-AR', {minimumFractionDigits: 2})
+                            }
+                        }
+                    },
                     scales: {
-                        x: { ticks: { callback: value => '$' + value.toLocaleString('es-AR') } }
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: value => '$' + value.toLocaleString('es-AR') }
+                        }
                     }
                 }
             });
@@ -825,16 +889,15 @@
             try {
                 const filtros = obtenerFiltrosCompras();
                 
-                const [stats, evolucion, topProveedores, comprobantes] = await Promise.all([
+                const [stats, evolucion, comprobantes] = await Promise.all([
                     fetch(API_URL + '/api/compras/stats' + filtros).then(r => r.json()),
                     fetch(API_URL + '/api/compras/evolucion' + filtros).then(r => r.json()),
-                    fetch(API_URL + '/api/compras/top-proveedores' + filtros).then(r => r.json()),
                     fetch(API_URL + '/api/compras/analisis-comprobantes' + filtros).then(r => r.json())
                 ]);
                 
                 actualizarStatsCompras(stats);
                 actualizarGraficoEvolucionCompras(evolucion);
-                actualizarGraficoProveedoresCompras(topProveedores);
+                actualizarGraficoEvolucionAcumuladaCompras(evolucion);
                 actualizarTablaComprobantesCompras(comprobantes);
                 
                 document.getElementById('loading').style.display = 'none';
@@ -874,22 +937,28 @@
             
             const ctx = document.getElementById('compras-evolucion').getContext('2d');
             charts.comprasEvolucion = new Chart(ctx, {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: data.map(d => d.mes),
                     datasets: [{
                         label: 'Compras Mensuales',
                         data: data.map(d => parseFloat(d.total)),
-                        borderColor: '#8B1A1A',
-                        backgroundColor: 'rgba(139, 26, 26, 0.1)',
-                        tension: 0.4,
-                        fill: true
+                        backgroundColor: '#8B1A1A',
+                        borderRadius: 8
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: { 
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: (value) => '$' + value.toLocaleString('es-AR'),
+                            font: { weight: 'bold', size: 11 }
+                        }
+                    },
                     scales: {
                         y: {
                             beginAtZero: true,
@@ -900,27 +969,49 @@
             });
         }
         
-        function actualizarGraficoProveedoresCompras(data) {
+        function actualizarGraficoEvolucionAcumuladaCompras(data) {
             if (charts.comprasProveedores) charts.comprasProveedores.destroy();
+            
+            // Calcular acumulado
+            let acumulado = 0;
+            const dataAcumulada = data.map(d => {
+                acumulado += parseFloat(d.total);
+                return acumulado;
+            });
             
             const ctx = document.getElementById('compras-proveedores-chart').getContext('2d');
             charts.comprasProveedores = new Chart(ctx, {
-                type: 'bar',
+                type: 'line',
                 data: {
-                    labels: data.map(d => d.nombre.substring(0, 30)),
+                    labels: data.map(d => d.mes),
                     datasets: [{
-                        label: 'Total',
-                        data: data.map(d => parseFloat(d.total)),
-                        backgroundColor: '#8B1A1A'
+                        label: 'Acumulado',
+                        data: dataAcumulada,
+                        borderColor: '#8B1A1A',
+                        backgroundColor: 'rgba(139, 26, 26, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    indexAxis: 'y',
-                    plugins: { legend: { display: false } },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => 'Acumulado: $' + context.parsed.y.toLocaleString('es-AR', {minimumFractionDigits: 2})
+                            }
+                        }
+                    },
                     scales: {
-                        x: { ticks: { callback: value => '$' + value.toLocaleString('es-AR') } }
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: value => '$' + value.toLocaleString('es-AR') }
+                        }
                     }
                 }
             });
@@ -992,7 +1083,7 @@
                 });
                 
                 // Empresas (para todos los selectores)
-                ['ventas-empresa', 'compras-empresa', 'comparacion-empresa'].forEach(selectId => {
+                ['ventas-empresa', 'compras-empresa', 'resultado-empresa'].forEach(selectId => {
                     const select = document.getElementById(selectId);
                     empresas.forEach(e => {
                         const option = document.createElement('option');
@@ -1021,14 +1112,14 @@
                 });
                 
                 // Dimensiones Comparación (simple)
-                const dimComparacionSelect = document.getElementById('comparacion-dimension');
+                const dimResultadoSelect = document.getElementById('resultado-dimension');
                 // Combinar dimensiones únicas
                 const allDims = [...new Set([...dimVentas.map(d => d.nombre), ...dimCompras.map(d => d.nombre)])];
                 allDims.sort().forEach(d => {
                     const option = document.createElement('option');
                     option.value = d;
                     option.textContent = d;
-                    dimComparacionSelect.appendChild(option);
+                    dimResultadoSelect.appendChild(option);
                 });
                 
             } catch (error) {
@@ -1050,3 +1141,4 @@
     </script>
 </body>
 </html>
+
