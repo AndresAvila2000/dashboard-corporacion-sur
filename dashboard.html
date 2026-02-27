@@ -457,7 +457,7 @@
 // CONFIG
 // ═══════════════════════════════════════════════════════
 const API_URL = 'https://api-dashboard-corporacion-production.up.railway.app';
-const VISIONBLO_BASE = 'https://apps6.visionblo.com/rb/app';
+// VisionBlo se accede via proxy Railway (evita CORS)
 
 let MOVIL_SID = 'OLvPMOLoJm12qvCYkno6uCtPfymdFGywYk08OWER+Rk='; // se puede actualizar en UI
 let charts = {};
@@ -495,7 +495,9 @@ function actualizarSid() {
 // ═══════════════════════════════════════════════════════
 async function movilPost(endpoint, extra = {}) {
     const body = { sid: MOVIL_SID, ...extra };
-    const res = await fetch(`${VISIONBLO_BASE}/${endpoint}`, {
+    // Usa proxy en Railway para evitar CORS
+    const proxyUrl = `${API_URL}/api/movilidad?ruta=${encodeURIComponent(endpoint)}`;
+    const res = await fetch(proxyUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -938,5 +940,3 @@ window.addEventListener('load', () => {
 </script>
 </body>
 </html>
-
-
