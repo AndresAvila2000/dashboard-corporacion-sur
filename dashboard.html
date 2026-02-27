@@ -363,8 +363,9 @@
         <div class="sid-warning" id="sid-warning">
             ⚠️ <strong>Session ID de VisionBlo:</strong> El token expira con cada sesión. Si los datos no cargan, loguéate en <a href="https://apps.visionblo.com/rb/" target="_blank">VisionBlo</a>, abrí F12 → Network y copiá el valor <code>sid</code> del payload de cualquier request.
             <div class="sid-input-row">
-                <input type="text" id="movil-sid-input" class="sid-input" placeholder="Pegá el nuevo sid aquí...">
-                <button class="btn" onclick="actualizarSid()">🔄 Actualizar SID</button>
+                <input type="text" id="movil-sid-input" class="sid-input" placeholder="sid: valor del payload...">
+                <input type="text" id="movil-cookie-input" class="sid-input" placeholder="Cookie: valor del Request Header...">
+                <button class="btn" onclick="actualizarSid()">🔄 Actualizar y Recargar</button>
             </div>
         </div>
 
@@ -459,7 +460,8 @@
 const API_URL = 'https://api-dashboard-corporacion-production.up.railway.app';
 // VisionBlo se accede via proxy Railway (evita CORS)
 
-let MOVIL_SID = 'OLvPMOLoJm12qvCYkno6uCtPfymdFGywYk08OWER+Rk='; // se puede actualizar en UI
+let MOVIL_SID = ''; // se actualiza desde UI
+let MOVIL_COOKIE = ''; // cookie de sesión VisionBlo
 let charts = {};
 let movilidadCargada = false;
 
@@ -482,11 +484,14 @@ function switchTab(tab, event) {
 // MOVILIDAD — SID
 // ═══════════════════════════════════════════════════════
 function actualizarSid() {
-    const input = document.getElementById('movil-sid-input').value.trim();
-    if (!input) { alert('Por favor ingresá el SID'); return; }
-    MOVIL_SID = input;
+    const sid = document.getElementById('movil-sid-input').value.trim();
+    const cookie = document.getElementById('movil-cookie-input').value.trim();
+    if (!sid) { alert('Por favor ingresá el SID'); return; }
+    MOVIL_SID = sid;
+    if (cookie) MOVIL_COOKIE = cookie;
     movilidadCargada = false;
     document.getElementById('movil-sid-input').value = '';
+    document.getElementById('movil-cookie-input').value = '';
     cargarMovilidad();
 }
 
@@ -495,6 +500,8 @@ function actualizarSid() {
 // ═══════════════════════════════════════════════════════
 async function movilPost(endpoint, extra = {}) {
     const body = { sid: MOVIL_SID, ...extra };
+    // Incluir cookie si está disponible
+    if (MOVIL_COOKIE) body._cookie = MOVIL_COOKIE;
     // Usa proxy en Railway para evitar CORS
     const proxyUrl = `${API_URL}/api/movilidad?ruta=${encodeURIComponent(endpoint)}`;
     const res = await fetch(proxyUrl, {
@@ -940,3 +947,4 @@ window.addEventListener('load', () => {
 </script>
 </body>
 </html>
+
