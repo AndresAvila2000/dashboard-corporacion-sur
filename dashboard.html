@@ -252,7 +252,6 @@
     <div class="tabs">
         <button class="tab-button active" onclick="switchTab('ventas', event)">📈 VENTAS</button>
         <button class="tab-button" onclick="switchTab('compras', event)">🛒 COMPRAS</button>
-        <button class="tab-button" onclick="switchTab('comparacion', event)">📊 COMPARACIÓN</button>
         <button class="tab-button" onclick="switchTab('resultado', event)">💰 RESULTADO</button>
         <button class="tab-button" onclick="switchTab('movilidad', event)">🚛 MOVILIDAD</button>
     </div>
@@ -337,25 +336,6 @@
     </div>
 
     <!-- ══════════════════ COMPARACIÓN TAB ══════════════════ -->
-    <div id="comparacion-tab" class="tab-content">
-        <div class="filters">
-            <h3>🔍 Filtros de Comparación</h3>
-            <div class="filter-row">
-                <div class="filter-group"><label>Fecha Desde</label><input type="date" id="comparacion-fecha-desde"></div>
-                <div class="filter-group"><label>Fecha Hasta</label><input type="date" id="comparacion-fecha-hasta"></div>
-                <div class="filter-group"><label>Empresa</label><select id="comparacion-empresa"><option value="">Todas las empresas</option></select></div>
-                <div class="filter-group"><label>Dimensión</label><select id="comparacion-dimension"><option value="">Todas las dimensiones</option></select></div>
-            </div>
-            <div>
-                <button class="btn" onclick="aplicarFiltrosComparacion()">Aplicar Filtros</button>
-                <button class="btn btn-secondary" onclick="limpiarFiltrosComparacion()">Limpiar</button>
-            </div>
-        </div>
-        <div class="chart-container" style="max-width:100%;">
-            <h3>📊 Evolución Ventas vs Compras (Importe Neto)</h3>
-            <div class="chart-wrapper" style="height:450px;"><canvas id="comparacion-evolucion"></canvas></div>
-        </div>
-    </div>
 
     <!-- ══════════════════ RESULTADO TAB ══════════════════ -->
     <div id="resultado-tab" class="tab-content">
@@ -380,31 +360,56 @@
         
         <div class="chart-container" style="max-width:100%;">
             <h3>📊 Neto Acumulado Mensual</h3>
+            <div style="display:flex; justify-content:center; gap:25px; margin-bottom:15px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="width:20px; height:20px; background:#dc2626; border-radius:4px;"></div>
+                    <span style="color:#666; font-size:0.9em; font-weight:600;">Compras</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="width:20px; height:20px; background:#16a34a; border-radius:4px;"></div>
+                    <span style="color:#666; font-size:0.9em; font-weight:600;">Ventas</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="width:20px; height:20px; background:#2563eb; border-radius:4px;"></div>
+                    <span style="color:#666; font-size:0.9em; font-weight:600;">Resultado (+)</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="width:20px; height:20px; background:#eab308; border-radius:4px;"></div>
+                    <span style="color:#666; font-size:0.9em; font-weight:600;">Resultado (−)</span>
+                </div>
+            </div>
             <div class="chart-wrapper" style="height:450px;"><canvas id="resultado-mensual"></canvas></div>
         </div>
     </div>
 
     <!-- ══════════════════ MOVILIDAD TAB ══════════════════ -->
     <div id="movilidad-tab" class="tab-content">
-        <div style="background:white; padding:20px; border-radius:15px; box-shadow:0 10px 30px rgba(0,0,0,0.2); margin-bottom:20px;">
-            <h3 style="color:#8B1A1A; margin-bottom:15px; display:flex; align-items:center; gap:10px;">
-                🚛 Sistema de Seguimiento Satelital VisionBlo
-            </h3>
-            <p style="color:#666; margin-bottom:15px; font-size:0.95em;">
-                Monitoreo en tiempo real de la flota vehicular
+        <div style="background:white; padding:60px 40px; border-radius:15px; box-shadow:0 10px 30px rgba(0,0,0,0.2); text-align:center;">
+            <div style="font-size:4em; margin-bottom:20px;">🚛</div>
+            <h2 style="color:#8B1A1A; margin-bottom:15px; font-size:1.8em;">Sistema de Seguimiento Satelital</h2>
+            <p style="color:#666; margin-bottom:30px; font-size:1.1em; max-width:600px; margin-left:auto; margin-right:auto;">
+                Monitoreo en tiempo real de la flota vehicular mediante VisionBlo
             </p>
-            <div style="border:2px solid #e2e8f0; border-radius:10px; overflow:hidden;">
-                <iframe
-                    src="https://apps.visionblo.com/rb/"
-                    width="100%"
-                    height="800px"
-                    style="border:none; display:block;"
-                    title="VisionBlo Tracking System"
-                    allow="geolocation">
-                </iframe>
+            <a href="https://apps.visionblo.com/rb/" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               style="display:inline-block; background:linear-gradient(135deg, #8B1A1A 0%, #A62929 100%); 
+                      color:white; padding:20px 50px; border-radius:12px; text-decoration:none; 
+                      font-size:1.2em; font-weight:600; box-shadow:0 4px 12px rgba(139,26,26,0.3);
+                      transition:all 0.3s;"
+               onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(139,26,26,0.4)'"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(139,26,26,0.3)'">
+                🚀 Abrir VisionBlo
+            </a>
+            <div style="margin-top:30px; padding:20px; background:#fef3c7; border-radius:10px; max-width:500px; margin-left:auto; margin-right:auto;">
+                <p style="color:#92400e; font-size:0.95em; margin:0;">
+                    💡 <strong>Nota:</strong> Se abrirá en una nueva pestaña del navegador
+                </p>
             </div>
-            <div style="margin-top:15px; padding:12px; background:#fef3c7; border-radius:8px; font-size:0.9em; color:#92400e;">
-                💡 <strong>Nota:</strong> Iniciá sesión en VisionBlo dentro del iframe para ver los datos de tu flota.
+            <div style="margin-top:25px; color:#999; font-size:0.85em;">
+                <p style="margin:5px 0;">✓ Acceso directo al sistema de tracking</p>
+                <p style="margin:5px 0;">✓ Visualización de rutas y ubicaciones</p>
+                <p style="margin:5px 0;">✓ Reportes de kilometraje e infracciones</p>
             </div>
         </div>
     </div><!-- /movilidad-tab -->
@@ -433,7 +438,6 @@ function switchTab(tab, event) {
 
     if (tab === 'ventas')       cargarDatosVentas();
     else if (tab === 'compras') cargarDatosCompras();
-    else if (tab === 'comparacion') cargarDatosComparacion();
     else if (tab === 'resultado') cargarDatosResultado();
     else if (tab === 'movilidad')   {}  // Iframe no necesita cargar datos
 }
@@ -521,16 +525,66 @@ function actualizarGraficoNetoMensual(ventasData, comprasData) {
         data: {
             labels: meses,
             datasets: [
-                { label: "Compras", data: comprasArr, backgroundColor: "#dc2626", borderRadius: 6 },
-                { label: "Ventas", data: ventasArr, backgroundColor: "#16a34a", borderRadius: 6 },
-                { label: "Resultado", data: resultadoArr, backgroundColor: resultadoArr.map(v => v >= 0 ? "#2563eb" : "#dc2626"), borderRadius: 6 }
+                { 
+                    label: "Compras", 
+                    data: comprasArr, 
+                    backgroundColor: "#dc2626",
+                    borderColor: "#dc2626",
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    order: 3
+                },
+                { 
+                    label: "Ventas", 
+                    data: ventasArr, 
+                    backgroundColor: "#16a34a",
+                    borderColor: "#16a34a",
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    order: 2
+                },
+                { 
+                    label: "Resultado", 
+                    data: resultadoArr, 
+                    backgroundColor: resultadoArr.map(v => v >= 0 ? "#2563eb" : "#eab308"),
+                    borderColor: resultadoArr.map(v => v >= 0 ? "#2563eb" : "#eab308"),
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    order: 1
+                }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: true, position: "top", labels: { font: { size: 14, weight: "bold" }, padding: 15 } }, tooltip: { callbacks: { label: (c) => c.dataset.label + ": $" + c.parsed.y.toLocaleString("es-AR", {minimumFractionDigits: 2}) } } },
-            scales: { y: { beginAtZero: true, ticks: { callback: v => "$" + v.toLocaleString("es-AR") } } }
+            plugins: { 
+                legend: { 
+                    display: true, 
+                    position: "top", 
+                    labels: { 
+                        font: { size: 14, weight: "bold" }, 
+                        padding: 15,
+                        generateLabels: function(chart) {
+                            return [
+                                { text: 'Compras', fillStyle: '#dc2626', strokeStyle: '#dc2626', lineWidth: 1 },
+                                { text: 'Ventas', fillStyle: '#16a34a', strokeStyle: '#16a34a', lineWidth: 1 },
+                                { text: 'Resultado (+ Positivo / - Negativo)', fillStyle: '#2563eb', strokeStyle: '#2563eb', lineWidth: 1 }
+                            ];
+                        }
+                    } 
+                }, 
+                tooltip: { 
+                    callbacks: { 
+                        label: (c) => c.dataset.label + ": $" + c.parsed.y.toLocaleString("es-AR", {minimumFractionDigits: 2}) 
+                    } 
+                } 
+            },
+            scales: { 
+                y: { 
+                    beginAtZero: true, 
+                    ticks: { callback: v => "$" + v.toLocaleString("es-AR") } 
+                } 
+            }
         }
     });
 }
@@ -679,61 +733,6 @@ function limpiarFiltrosCompras() {
 }
 
 // ═══════════════════════════════════════════════════════
-// COMPARACIÓN
-// ═══════════════════════════════════════════════════════
-async function cargarDatosComparacion() {
-    try {
-        const filtros = obtenerFiltrosComparacion();
-        const [evV, evC] = await Promise.all([
-            fetch(API_URL + '/api/ventas/evolucion' + filtros).then(r => r.json()),
-            fetch(API_URL + '/api/compras/evolucion' + filtros).then(r => r.json())
-        ]);
-        actualizarGraficoComparacion(evV, evC);
-        document.getElementById('loading').style.display = 'none';
-    } catch (error) { mostrarError('Error al cargar comparación: ' + error.message); }
-}
-function obtenerFiltrosComparacion() {
-    const p = new URLSearchParams();
-    const desde = document.getElementById('comparacion-fecha-desde').value;
-    const hasta  = document.getElementById('comparacion-fecha-hasta').value;
-    const empresa = document.getElementById('comparacion-empresa').value;
-    const dim = document.getElementById('comparacion-dimension').value;
-    if (desde) p.append('fecha_desde', desde);
-    if (hasta)  p.append('fecha_hasta', hasta);
-    if (empresa) p.append('empresa', empresa);
-    if (dim) p.append('dimension', dim);
-    return p.toString() ? '?' + p.toString() : '';
-}
-function aplicarFiltrosComparacion() { cargarDatosComparacion(); }
-function limpiarFiltrosComparacion() {
-    ['comparacion-fecha-desde','comparacion-fecha-hasta','comparacion-empresa','comparacion-dimension'].forEach(id => document.getElementById(id).value = '');
-    cargarDatosComparacion();
-}
-function actualizarGraficoComparacion(ventasData, comprasData) {
-    if (charts.comparacion) charts.comparacion.destroy();
-    const mesesSet = new Set([...ventasData.map(d => d.mes), ...comprasData.map(d => d.mes)]);
-    const meses = Array.from(mesesSet).sort();
-    const vMap = {}, cMap = {};
-    ventasData.forEach(d => vMap[d.mes] = parseFloat(d.total || 0));
-    comprasData.forEach(d => cMap[d.mes] = parseFloat(d.total || 0));
-    const ctx = document.getElementById('comparacion-evolucion').getContext('2d');
-    charts.comparacion = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: meses,
-            datasets: [
-                { label: 'Ventas',  data: meses.map(m => vMap[m] || 0), borderColor: '#8B1A1A', backgroundColor: 'rgba(139,26,26,0.1)',  tension: 0.4, fill: true, borderWidth: 3, pointRadius: 5 },
-                { label: 'Compras', data: meses.map(m => cMap[m] || 0), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.1)',   tension: 0.4, fill: true, borderWidth: 3, pointRadius: 5 }
-            ]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
-            plugins: { legend: { display: true, position: 'top', labels: { font: { size: 16, weight: 'bold' }, padding: 20 } }, tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString('es-AR', { minimumFractionDigits: 2 }) } } },
-            scales: { y: { beginAtZero: true, ticks: { callback: v => '$' + v.toLocaleString('es-AR') } } }
-        }
-    });
-}
 
 // ═══════════════════════════════════════════════════════
 // FILTROS GLOBALES
@@ -751,7 +750,7 @@ async function cargarFiltros() {
         clientes.forEach(c => { const o = new Option(c.nombre, c.nombre); cSel.appendChild(o); });
         const pSel = document.getElementById('compras-proveedor');
         proveedores.forEach(p => { const o = new Option(p.nombre, p.nombre); pSel.appendChild(o); });
-        ['ventas-empresa','compras-empresa','comparacion-empresa','resultado-empresa'].forEach(id => {
+        ['ventas-empresa','compras-empresa','resultado-empresa'].forEach(id => {
             const s = document.getElementById(id);
             empresas.forEach(e => s.appendChild(new Option(e.nombre, e.nombre)));
         });
@@ -760,8 +759,6 @@ async function cargarFiltros() {
         dimC.forEach(d => $('#compras-dimension').append(new Option(d.nombre, d.nombre)));
         $('#compras-dimension').select2({ placeholder: 'Seleccionar dimensiones', allowClear: true });
         const allDims = [...new Set([...dimV.map(d => d.nombre), ...dimC.map(d => d.nombre)])].sort();
-        const dcSel = document.getElementById('comparacion-dimension');
-        allDims.forEach(d => dcSel.appendChild(new Option(d, d)));
         const drSel = document.getElementById('resultado-dimension');
         allDims.forEach(d => drSel.appendChild(new Option(d, d)));
     } catch (e) { console.error('Error cargando filtros:', e); }
