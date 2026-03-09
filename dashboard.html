@@ -107,6 +107,25 @@
             <div class="chart-container"><h3>📈 Evolución Mensual</h3><div class="chart-wrapper"><canvas id="ventas-evolucion"></canvas></div></div>
             <div class="chart-container"><h3>👥 Top 10 Clientes</h3><div class="chart-wrapper"><canvas id="ventas-clientes-chart"></canvas></div></div>
         </div>
+        <div class="chart-container" style="max-width:100%;">
+            <h3>📋 Detalle de Comprobantes</h3>
+            <div style="overflow-x:auto; max-height:500px; overflow-y:auto;">
+                <table id="ventas-tabla" style="width:100%; border-collapse:collapse; font-size:0.9em;">
+                    <thead style="position:sticky; top:0; background:#8B1A1A; color:white;">
+                        <tr>
+                            <th style="padding:12px; text-align:left; border-bottom:2px solid #ddd;">Fecha</th>
+                            <th style="padding:12px; text-align:left; border-bottom:2px solid #ddd;">N° Comprobante</th>
+                            <th style="padding:12px; text-align:left; border-bottom:2px solid #ddd;">Cliente</th>
+                            <th style="padding:12px; text-align:left; border-bottom:2px solid #ddd;">Producto</th>
+                            <th style="padding:12px; text-align:right; border-bottom:2px solid #ddd;">Importe Neto</th>
+                            <th style="padding:12px; text-align:left; border-bottom:2px solid #ddd;">Cuenta</th>
+                            <th style="padding:12px; text-align:left; border-bottom:2px solid #ddd;">Observaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- COMPRAS -->
@@ -134,6 +153,25 @@
         <div class="charts-grid">
             <div class="chart-container"><h3>📈 Evolución Mensual</h3><div class="chart-wrapper"><canvas id="compras-evolucion"></canvas></div></div>
             <div class="chart-container"><h3>🏢 Top 10 Proveedores</h3><div class="chart-wrapper"><canvas id="compras-proveedores-chart"></canvas></div></div>
+        </div>
+        <div class="chart-container" style="max-width:100%;">
+            <h3>📋 Detalle de Comprobantes</h3>
+            <div style="overflow-x:auto; max-height:500px; overflow-y:auto;">
+                <table id="compras-tabla" style="width:100%; border-collapse:collapse; font-size:0.9em;">
+                    <thead style="position:sticky; top:0; background:#8B1A1A; color:white;">
+                        <tr>
+                            <th style="padding:12px; text-align:left; border-bottom:2px solid #ddd;">Fecha</th>
+                            <th style="padding:12px; text-align:left; border-bottom:2px solid #ddd;">N° Comprobante</th>
+                            <th style="padding:12px; text-align:left; border-bottom:2px solid #ddd;">Proveedor</th>
+                            <th style="padding:12px; text-align:left; border-bottom:2px solid #ddd;">Producto</th>
+                            <th style="padding:12px; text-align:right; border-bottom:2px solid #ddd;">Importe Neto</th>
+                            <th style="padding:12px; text-align:left; border-bottom:2px solid #ddd;">Cuenta</th>
+                            <th style="padding:12px; text-align:left; border-bottom:2px solid #ddd;">Observaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -166,6 +204,25 @@
             </div>
             <div class="chart-wrapper" style="height:450px;"><canvas id="resultado-mensual"></canvas></div>
         </div>
+        <div class="chart-container" style="max-width:100%; margin-top:20px;">
+            <h3>📋 Detalle de Comprobantes (Ventas y Compras)</h3>
+            <div style="overflow-x:auto; max-height:500px; overflow-y:auto;">
+                <table id="resultado-tabla" style="width:100%; border-collapse:collapse; font-size:0.9em;">
+                    <thead style="position:sticky; top:0; background:#8B1A1A; color:white;">
+                        <tr>
+                            <th style="padding:12px; text-align:left; border-bottom:2px solid #ddd;">Tipo</th>
+                            <th style="padding:12px; text-align:left; border-bottom:2px solid #ddd;">Fecha</th>
+                            <th style="padding:12px; text-align:left; border-bottom:2px solid #ddd;">N° Comprobante</th>
+                            <th style="padding:12px; text-align:left; border-bottom:2px solid #ddd;">Cliente/Proveedor</th>
+                            <th style="padding:12px; text-align:left; border-bottom:2px solid #ddd;">Producto</th>
+                            <th style="padding:12px; text-align:right; border-bottom:2px solid #ddd;">Importe Neto</th>
+                            <th style="padding:12px; text-align:left; border-bottom:2px solid #ddd;">Cuenta</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -187,10 +244,11 @@ function switchTab(tab, event) {
 async function cargarDatosVentas() {
     try {
         const filtros = obtenerFiltrosVentas();
-        const [stats, evolucion, topClientes] = await Promise.all([
+        const [stats, evolucion, topClientes, detalle] = await Promise.all([
             fetch(API_URL + '/api/ventas/stats' + filtros).then(r => r.json()),
             fetch(API_URL + '/api/ventas/evolucion' + filtros).then(r => r.json()),
-            fetch(API_URL + '/api/ventas/top-clientes' + filtros).then(r => r.json())
+            fetch(API_URL + '/api/ventas/top-clientes' + filtros).then(r => r.json()),
+            fetch(API_URL + '/api/ventas/detalle' + filtros).then(r => r.json())
         ]);
         document.getElementById('ventas-total').textContent = formatCurrency(stats.total_facturado || 0);
         document.getElementById('ventas-cantidad').textContent = formatNumber(stats.cantidad_facturas || 0);
@@ -202,6 +260,22 @@ async function cargarDatosVentas() {
         if (charts.ventasClientes) charts.ventasClientes.destroy();
         const ctx2 = document.getElementById('ventas-clientes-chart').getContext('2d');
         charts.ventasClientes = new Chart(ctx2, { type: 'bar', data: { labels: topClientes.map(d => d.nombre.substring(0, 30)), datasets: [{ label: 'Total', data: topClientes.map(d => parseFloat(d.total)), backgroundColor: '#8B1A1A', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { callback: v => '$' + v.toLocaleString('es-AR') } } } } });
+        const tbody = document.querySelector('#ventas-tabla tbody');
+        tbody.innerHTML = '';
+        detalle.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #eee';
+            tr.innerHTML = `
+                <td style="padding:10px;">${row.fecha || '-'}</td>
+                <td style="padding:10px;">${row.comprobante || '-'}</td>
+                <td style="padding:10px;">${row.cliente || '-'}</td>
+                <td style="padding:10px;">${row.producto || '-'}</td>
+                <td style="padding:10px; text-align:right; font-weight:600;">${formatCurrency(row.importe || 0)}</td>
+                <td style="padding:10px;">${row.cuenta || '-'}</td>
+                <td style="padding:10px;">${row.descripcion || '-'}</td>
+            `;
+            tbody.appendChild(tr);
+        });
         document.getElementById('loading').style.display = 'none';
     } catch (error) { mostrarError('Error al cargar ventas: ' + error.message); }
 }
@@ -236,10 +310,11 @@ function limpiarFiltrosVentas() {
 async function cargarDatosCompras() {
     try {
         const filtros = obtenerFiltrosCompras();
-        const [stats, evolucion, topProveedores] = await Promise.all([
+        const [stats, evolucion, topProveedores, detalle] = await Promise.all([
             fetch(API_URL + '/api/compras/stats' + filtros).then(r => r.json()),
             fetch(API_URL + '/api/compras/evolucion' + filtros).then(r => r.json()),
-            fetch(API_URL + '/api/compras/top-proveedores' + filtros).then(r => r.json())
+            fetch(API_URL + '/api/compras/top-proveedores' + filtros).then(r => r.json()),
+            fetch(API_URL + '/api/compras/detalle' + filtros).then(r => r.json())
         ]);
         document.getElementById('compras-total').textContent = formatCurrency(stats.total_compras || 0);
         document.getElementById('compras-cantidad').textContent = formatNumber(stats.cantidad_facturas || 0);
@@ -251,6 +326,22 @@ async function cargarDatosCompras() {
         if (charts.comprasProveedores) charts.comprasProveedores.destroy();
         const ctx2 = document.getElementById('compras-proveedores-chart').getContext('2d');
         charts.comprasProveedores = new Chart(ctx2, { type: 'bar', data: { labels: topProveedores.map(d => d.nombre.substring(0, 30)), datasets: [{ label: 'Total', data: topProveedores.map(d => parseFloat(d.total)), backgroundColor: '#8B1A1A', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { callback: v => '$' + v.toLocaleString('es-AR') } } } } });
+        const tbody = document.querySelector('#compras-tabla tbody');
+        tbody.innerHTML = '';
+        detalle.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #eee';
+            tr.innerHTML = `
+                <td style="padding:10px;">${row.fecha || '-'}</td>
+                <td style="padding:10px;">${row.comprobante || '-'}</td>
+                <td style="padding:10px;">${row.proveedor || '-'}</td>
+                <td style="padding:10px;">${row.producto || '-'}</td>
+                <td style="padding:10px; text-align:right; font-weight:600;">${formatCurrency(row.importe || 0)}</td>
+                <td style="padding:10px;">${row.cuenta || '-'}</td>
+                <td style="padding:10px;">${row.descripcion || '-'}</td>
+            `;
+            tbody.appendChild(tr);
+        });
         document.getElementById('loading').style.display = 'none';
     } catch (error) { mostrarError('Error al cargar compras: ' + error.message); }
 }
@@ -284,11 +375,16 @@ function limpiarFiltrosCompras() {
 // RESULTADO
 async function cargarDatosResultado() {
     try {
-        const filtros = obtenerFiltrosResultado();
-        const [evV, evC] = await Promise.all([
-            fetch(API_URL + '/api/ventas/evolucion' + filtros).then(r => r.json()),
-            fetch(API_URL + '/api/compras/evolucion' + filtros).then(r => r.json())
+        const filtrosResultado = obtenerFiltrosResultado();
+        console.log('Filtros Resultado:', filtrosResultado);
+        const [evV, evC, detalleV, detalleC] = await Promise.all([
+            fetch(API_URL + '/api/ventas/evolucion' + filtrosResultado).then(r => r.json()),
+            fetch(API_URL + '/api/compras/evolucion' + filtrosResultado).then(r => r.json()),
+            fetch(API_URL + '/api/ventas/detalle' + filtrosResultado + (filtrosResultado ? '&' : '?') + 'limit=50').then(r => r.json()),
+            fetch(API_URL + '/api/compras/detalle' + filtrosResultado + (filtrosResultado ? '&' : '?') + 'limit=50').then(r => r.json())
         ]);
+        console.log('Ventas:', evV);
+        console.log('Compras:', evC);
         const totalV = evV.reduce((sum, d) => sum + parseFloat(d.total || 0), 0);
         const totalC = evC.reduce((sum, d) => sum + parseFloat(d.total || 0), 0);
         const resultado = totalV - totalC;
@@ -306,6 +402,25 @@ async function cargarDatosResultado() {
         if (charts.resultadoMensual) charts.resultadoMensual.destroy();
         const ctx2 = document.getElementById('resultado-mensual').getContext('2d');
         charts.resultadoMensual = new Chart(ctx2, { type: 'bar', data: { labels: meses, datasets: [{ label: 'Compras', data: comprasArr, backgroundColor: '#dc2626', borderRadius: 6 }, { label: 'Ventas', data: ventasArr, backgroundColor: '#16a34a', borderRadius: 6 }, { label: 'Resultado', data: resultadoArr, backgroundColor: resultadoArr.map(v => v >= 0 ? '#2563eb' : '#eab308'), borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top' }, tooltip: { callbacks: { label: (c) => c.dataset.label + ': $' + c.parsed.y.toLocaleString('es-AR', {minimumFractionDigits: 2}) } } }, scales: { y: { beginAtZero: true, ticks: { callback: v => '$' + v.toLocaleString('es-AR') } } } } });
+        const tbody = document.querySelector('#resultado-tabla tbody');
+        tbody.innerHTML = '';
+        const ventas = detalleV.map(r => ({...r, tipo: 'Venta', clienteproveedor: r.cliente}));
+        const compras = detalleC.map(r => ({...r, tipo: 'Compra', clienteproveedor: r.proveedor}));
+        const combined = [...ventas, ...compras].sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
+        combined.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #eee';
+            tr.innerHTML = `
+                <td style="padding:10px;"><span style="padding:4px 8px; border-radius:4px; background:${row.tipo === 'Venta' ? '#16a34a' : '#dc2626'}; color:white; font-size:0.85em; font-weight:600;">${row.tipo}</span></td>
+                <td style="padding:10px;">${row.fecha || '-'}</td>
+                <td style="padding:10px;">${row.comprobante || '-'}</td>
+                <td style="padding:10px;">${row.clienteproveedor || '-'}</td>
+                <td style="padding:10px;">${row.producto || '-'}</td>
+                <td style="padding:10px; text-align:right; font-weight:600;">${formatCurrency(row.importe || 0)}</td>
+                <td style="padding:10px;">${row.cuenta || '-'}</td>
+            `;
+            tbody.appendChild(tr);
+        });
         document.getElementById('loading').style.display = 'none';
     } catch (error) { mostrarError('Error al cargar resultado: ' + error.message); }
 }
