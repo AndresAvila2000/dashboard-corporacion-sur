@@ -325,13 +325,12 @@ function obtenerFiltrosVentas() {
     const desde = document.getElementById('ventas-fecha-desde').value;
     const hasta = document.getElementById('ventas-fecha-hasta').value;
     const cliente = document.getElementById('ventas-cliente').value;
+    const empresa = document.getElementById('ventas-empresa').value;
     const dimension = document.getElementById('ventas-dimension').value;
     if (desde) p.append('fecha_desde', desde);
     if (hasta) p.append('fecha_hasta', hasta);
     if (cliente) p.append('cliente', cliente);
     if (empresa) p.append('empresa', empresa);
-    const empresa = document.getElementById(tipo + "-empresa").value;
-    if (empresa) p.append("empresa", empresa);
     if (dimension) p.append('dimension', dimension);
     return p.toString() ? '?' + p.toString() : '';
 }
@@ -416,13 +415,12 @@ function obtenerFiltrosCompras() {
     const desde = document.getElementById('compras-fecha-desde').value;
     const hasta = document.getElementById('compras-fecha-hasta').value;
     const proveedor = document.getElementById('compras-proveedor').value;
+    const empresa = document.getElementById('compras-empresa').value;
     const dimension = document.getElementById('compras-dimension').value;
     if (desde) p.append('fecha_desde', desde);
     if (hasta) p.append('fecha_hasta', hasta);
     if (proveedor) p.append('proveedor', proveedor);
     if (empresa) p.append('empresa', empresa);
-    const empresa = document.getElementById(tipo + "-empresa").value;
-    if (empresa) p.append("empresa", empresa);
     if (dimension) p.append('dimension', dimension);
     return p.toString() ? '?' + p.toString() : '';
 }
@@ -517,12 +515,11 @@ function obtenerFiltrosResultado() {
     const p = new URLSearchParams();
     const desde = document.getElementById('resultado-fecha-desde').value;
     const hasta = document.getElementById('resultado-fecha-hasta').value;
+    const empresa = document.getElementById('resultado-empresa').value;
     const dimension = document.getElementById('resultado-dimension').value;
     if (desde) p.append('fecha_desde', desde);
     if (hasta) p.append('fecha_hasta', hasta);
     if (empresa) p.append('empresa', empresa);
-    const empresa = document.getElementById(tipo + "-empresa").value;
-    if (empresa) p.append("empresa", empresa);
     if (dimension) p.append('dimension', dimension);
     return p.toString() ? '?' + p.toString() : '';
 }
