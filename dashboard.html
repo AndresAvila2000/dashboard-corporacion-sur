@@ -456,11 +456,12 @@ function mostrarError(msg) { document.getElementById('loading').style.display = 
 // CARGAR FILTROS
 async function cargarFiltros() {
     try {
-        const [clientes, proveedores, empresas, dimensionesV] = await Promise.all([
+        const [clientes, proveedores, empresas, dimensionesV, dimensionesC] = await Promise.all([
             fetch(API_URL + '/api/filtros/clientes').then(r => r.json()).catch(() => []),
             fetch(API_URL + '/api/filtros/proveedores').then(r => r.json()).catch(() => []),
             fetch(API_URL + '/api/filtros/empresas').then(r => r.json()).catch(() => []),
-            fetch(API_URL + '/api/filtros/dimensiones-ventas').then(r => r.json()).catch(() => [])
+            fetch(API_URL + '/api/filtros/dimensiones-ventas').then(r => r.json()).catch(() => []),
+            fetch(API_URL + '/api/filtros/dimensiones-compras').then(r => r.json()).catch(() => [])
         ]);
         const cliSel = document.getElementById('ventas-cliente');
         if (clientes && clientes.length) clientes.forEach(c => cliSel.appendChild(new Option(c.nombre, c.nombre)));
@@ -473,10 +474,17 @@ async function cargarFiltros() {
             });
         }
         if (dimensionesV && dimensionesV.length) {
-            ['ventas-dimension', 'compras-dimension', 'resultado-dimension'].forEach(id => {
-                const sel = document.getElementById(id);
-                dimensionesV.forEach(d => sel.appendChild(new Option(d.nombre, d.nombre)));
-            });
+            const sel = document.getElementById('ventas-dimension');
+            dimensionesV.forEach(d => sel.appendChild(new Option(d.nombre, d.nombre)));
+        }
+        if (dimensionesC && dimensionesC.length) {
+            const sel = document.getElementById('compras-dimension');
+            dimensionesC.forEach(d => sel.appendChild(new Option(d.nombre, d.nombre)));
+        }
+        // Para resultado, usar dimensiones de ventas
+        if (dimensionesV && dimensionesV.length) {
+            const sel = document.getElementById('resultado-dimension');
+            dimensionesV.forEach(d => sel.appendChild(new Option(d.nombre, d.nombre)));
         }
     } catch (e) { console.error('Error cargando filtros:', e); }
 }
